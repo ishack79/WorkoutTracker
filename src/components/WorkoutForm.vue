@@ -15,6 +15,7 @@ const workout = ref<Partial<Workout>>({
 
 const isEditing = ref(false);
 const showForm = ref(false);
+const isSaving = ref(false);
 
 const formTitle = computed(() => {
   return isEditing.value ? 'Edit Workout' : 'Add Workout';
@@ -29,30 +30,38 @@ const resetForm = () => {
   isEditing.value = false;
 };
 
-const saveWorkout = () => {
+const saveWorkout = async () => {
   if (!workout.value.description) return;
   
-  if (isEditing.value && workout.value.id) {
-    store.updateWorkout({
-      id: workout.value.id,
-      date: store.selectedDate,
-      description: workout.value.description || '',
-      results: workout.value.results || '',
-      comments: workout.value.comments || ''
-    });
-  } else {
-    store.addWorkout({
-      id: Date.now().toString(),
-      date: store.selectedDate,
-      description: workout.value.description || '',
-      results: workout.value.results || '',
-      comments: workout.value.comments || ''
-    });
-  }
+  isSaving.value = true;
   
-  resetForm();
-  showForm.value = false;
-  emit('form-closed');
+  try {
+    if (isEditing.value && workout.value.id) {
+      await store.updateWorkout({
+        id: workout.value.id,
+        date: store.selectedDate,
+        description: workout.value.description || '',
+        results: workout.value.results || '',
+        comments: workout.value.comments || ''
+      });
+    } else {
+      await store.addWorkout({
+        id: Date.now().toString(),
+        date: store.selectedDate,
+        description: workout.value.description || '',
+        results: workout.value.results || '',
+        comments: workout.value.comments || ''
+      });
+    }
+    
+    resetForm();
+    showForm.value = false;
+    emit('form-closed');
+  } catch (error) {
+    console.error('Error saving workout:', error);
+  } finally {
+    isSaving.value = false;
+  }
 };
 
 const editWorkout = (existingWorkout: Workout) => {
@@ -67,9 +76,13 @@ const closeForm = () => {
   emit('form-closed');
 };
 
-const deleteWorkout = (id: string) => {
+const deleteWorkout = async (id: string) => {
   if (confirm('Are you sure you want to delete this workout?')) {
-    store.deleteWorkout(id);
+    try {
+      await store.deleteWorkout(id);
+    } catch (error) {
+      console.error('Error deleting workout:', error);
+    }
   }
 };
 
@@ -122,8 +135,15 @@ defineExpose({
           
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="closeForm">Cancel</v-btn>
-            <v-btn color="primary" @click="saveWorkout">Save</v-btn>
+            <v-btn text @click="closeForm" :disabled="isSaving">Cancel</v-btn>
+            <v-btn 
+              color="primary" 
+              @click="saveWorkout" 
+              :loading="isSaving"
+              :disabled="!workout.description"
+            >
+              Save
+            </v-btn>
           </v-card-actions>
         </v-form>
       </v-card-text>

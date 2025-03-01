@@ -3,6 +3,7 @@ import { createPinia } from 'pinia'
 import piniaPluginPersistedstate from 'pinia-plugin-persistedstate'
 import './style.css'
 import App from './App.vue'
+import axios from 'axios'
 
 // Vuetify
 import 'vuetify/styles'
@@ -10,6 +11,9 @@ import { createVuetify } from 'vuetify'
 import * as components from 'vuetify/components'
 import * as directives from 'vuetify/directives'
 import '@mdi/font/css/materialdesignicons.css'
+
+// Configure axios
+axios.defaults.baseURL = 'http://localhost:3000'
 
 const vuetify = createVuetify({
   components,
@@ -33,7 +37,8 @@ const vuetify = createVuetify({
 })
 
 const pinia = createPinia()
-pinia.use(piniaPluginPersistedstate)
+// We're not using persistedstate anymore since we're storing data in JSON files
+// pinia.use(piniaPluginPersistedstate)
 
 createApp(App)
   .use(pinia)
