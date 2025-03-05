@@ -1,19 +1,36 @@
 import { defineStore } from 'pinia';
-import { ref } from 'vue';
-import type { Workout } from '../types';
+import { ref, computed } from 'vue';
+import { addDays, parseISO, isBefore, isAfter } from 'date-fns';
+import type { Workout, WorkoutStatus } from '../types';
 
 export const useWorkoutStore = defineStore('workout', () => {
   const workouts = ref<Workout[]>([]);
   const selectedDate = ref<string>(new Date().toISOString().split('T')[0]);
 
+  const canEditStatus = computed(() => (date: string) => {
+    const workoutDate = parseISO(date);
+    return true; // Allow editing status for all dates
+  });
+
   function addWorkout(workout: Workout) {
-    workouts.value.push(workout);
+    const isUpcoming = isBefore(new Date(), parseISO(workout.date));
+    workouts.value.push({
+      ...workout,
+      status: isUpcoming ? 'upcoming' : 'missed'
+    });
   }
 
   function updateWorkout(updatedWorkout: Workout) {
     const index = workouts.value.findIndex(w => w.id === updatedWorkout.id);
     if (index !== -1) {
       workouts.value[index] = updatedWorkout;
+    }
+  }
+
+  function updateWorkoutStatus(id: string, status: WorkoutStatus) {
+    const workout = workouts.value.find(w => w.id === id);
+    if (workout && canEditStatus.value(workout.date)) {
+      workout.status = status;
     }
   }
 
@@ -31,7 +48,9 @@ export const useWorkoutStore = defineStore('workout', () => {
     addWorkout,
     updateWorkout,
     deleteWorkout,
-    getWorkoutsByDate
+    getWorkoutsByDate,
+    updateWorkoutStatus,
+    canEditStatus
   };
 }, {
   persist: true

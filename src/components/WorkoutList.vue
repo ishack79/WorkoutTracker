@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useWorkoutStore } from '../stores/workoutStore';
 import { format, parseISO } from 'date-fns';
 import WorkoutForm from './WorkoutForm.vue';
-import type { Workout } from '../types';
+import type { Workout, WorkoutStatus } from '../types';
 
 const store = useWorkoutStore();
 const workoutForm = ref<InstanceType<typeof WorkoutForm> | null>(null);
@@ -24,9 +24,31 @@ const editWorkout = (workout: Workout) => {
   }
 };
 
-// Reset editing state when form is closed
 const onFormClose = () => {
   editingWorkoutId.value = null;
+};
+
+const getStatusColor = (status: WorkoutStatus) => {
+  switch (status) {
+    case 'complete': return 'success';
+    case 'missed': return 'error';
+    case 'upcoming': return 'grey';
+  }
+};
+
+const getStatusIcon = (status: WorkoutStatus) => {
+  switch (status) {
+    case 'complete': return 'mdi-check-circle';
+    case 'missed': return 'mdi-close-circle';
+    case 'upcoming': return 'mdi-clock-outline';
+  }
+};
+
+const cycleWorkoutStatus = (workout: Workout) => {
+  const statusCycle: WorkoutStatus[] = ['upcoming', 'complete', 'missed'];
+  const currentIndex = statusCycle.indexOf(workout.status);
+  const nextIndex = (currentIndex + 1) % statusCycle.length;
+  store.updateWorkoutStatus(workout.id, statusCycle[nextIndex]);
 };
 </script>
 
@@ -42,9 +64,26 @@ const onFormClose = () => {
       class="mb-4"
       v-show="editingWorkoutId !== workout.id"
     >
-      <v-card-title class="d-flex justify-space-between">
+      <v-card-title class="d-flex justify-space-between align-center">
         <span class="text-truncate">Workout</span>
-        <div>
+        <div class="d-flex align-center">
+          <v-chip
+            v-if="store.canEditStatus(workout.date)"
+            :color="getStatusColor(workout.status)"
+            class="mr-2"
+            @click="cycleWorkoutStatus(workout)"
+          >
+            <v-icon start :icon="getStatusIcon(workout.status)"></v-icon>
+            {{ workout.status.charAt(0).toUpperCase() + workout.status.slice(1) }}
+          </v-chip>
+          <v-chip
+            v-else
+            :color="getStatusColor(workout.status)"
+            class="mr-2"
+          >
+            <v-icon start :icon="getStatusIcon(workout.status)"></v-icon>
+            {{ workout.status.charAt(0).toUpperCase() + workout.status.slice(1) }}
+          </v-chip>
           <v-btn icon @click="editWorkout(workout)">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
