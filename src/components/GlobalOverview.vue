@@ -16,27 +16,47 @@ const globalStats = computed(() => {
     longestStreak: 0
   };
   
-  // Sort workouts by date
-  const sortedWorkouts = [...store.workouts].sort((a, b) => 
-    parseISO(a.date).getTime() - parseISO(b.date).getTime()
+  // Group workouts by date
+  const workoutsByDate = store.workouts.reduce((acc, workout) => {
+    if (!acc[workout.date]) {
+      acc[workout.date] = [];
+    }
+    acc[workout.date].push(workout);
+    return acc;
+  }, {} as Record<string, typeof store.workouts>);
+  
+  // Sort dates
+  const sortedDates = Object.keys(workoutsByDate).sort((a, b) => 
+    parseISO(a).getTime() - parseISO(b).getTime()
   );
   
   let currentStreak = 0;
   
-  // Count workouts by status
-  sortedWorkouts.forEach((workout) => {
-    stats[workout.status]++;
+  // Count days by status (taking the "best" status for each day)
+  sortedDates.forEach((date) => {
+    const dayWorkouts = workoutsByDate[date];
     stats.total++;
+    
+    // Determine the "best" status for the day
+    // complete > upcoming > missed
+    if (dayWorkouts.some(w => w.status === 'complete')) {
+      stats.complete++;
+    } else if (dayWorkouts.some(w => w.status === 'upcoming')) {
+      stats.upcoming++;
+    } else {
+      stats.missed++;
+    }
   });
   
-  // Calculate completion rate only for completed and missed workouts
+  // Calculate completion rate only for completed and missed days
   const totalCompleted = stats.complete;
   const totalAttempted = stats.complete + stats.missed;
   stats.completionRate = totalAttempted > 0 ? Math.round((totalCompleted / totalAttempted) * 100) : 0;
   
   // Calculate streaks
-  sortedWorkouts.forEach((workout) => {
-    if (workout.status === 'complete') {
+  sortedDates.forEach((date) => {
+    const dayWorkouts = workoutsByDate[date];
+    if (dayWorkouts.some(w => w.status === 'complete')) {
       currentStreak++;
       stats.longestStreak = Math.max(stats.longestStreak, currentStreak);
     } else {
@@ -47,14 +67,15 @@ const globalStats = computed(() => {
   // Calculate current streak (only count up to today)
   const today = new Date();
   currentStreak = 0;
-  for (let i = sortedWorkouts.length - 1; i >= 0; i--) {
-    const workoutDate = parseISO(sortedWorkouts[i].date);
+  for (let i = sortedDates.length - 1; i >= 0; i--) {
+    const date = sortedDates[i];
+    const workoutDate = parseISO(date);
     // Stop counting if we encounter a future date
     if (isBefore(today, workoutDate)) {
       continue;
     }
-    // Stop counting if we encounter a non-complete workout
-    if (sortedWorkouts[i].status !== 'complete') {
+    // Stop counting if we encounter a day without any complete workouts
+    if (!workoutsByDate[date].some(w => w.status === 'complete')) {
       break;
     }
     currentStreak++;
@@ -118,7 +139,7 @@ const statusChartData = computed(() => {
           <v-card class="stat-card" color="primary" variant="outlined">
             <div class="d-flex flex-column align-center pa-4">
               <div class="text-h4 font-weight-bold">{{ globalStats.total }}</div>
-              <div class="text-subtitle-1">Total Workouts</div>
+              <div class="text-subtitle-1">Total Workout Days</div>
             </div>
           </v-card>
         </v-col>
@@ -127,7 +148,7 @@ const statusChartData = computed(() => {
           <v-card class="stat-card" color="success" variant="outlined">
             <div class="d-flex flex-column align-center pa-4">
               <div class="text-h4 font-weight-bold">{{ globalStats.complete }}</div>
-              <div class="text-subtitle-1">Completed</div>
+              <div class="text-subtitle-1">Completed Days</div>
             </div>
           </v-card>
         </v-col>
@@ -136,7 +157,7 @@ const statusChartData = computed(() => {
           <v-card class="stat-card" color="error" variant="outlined">
             <div class="d-flex flex-column align-center pa-4">
               <div class="text-h4 font-weight-bold">{{ globalStats.missed }}</div>
-              <div class="text-subtitle-1">Missed</div>
+              <div class="text-subtitle-1">Missed Days</div>
             </div>
           </v-card>
         </v-col>
@@ -155,7 +176,7 @@ const statusChartData = computed(() => {
         <v-col cols="12" md="6">
           <v-card class="stat-card" variant="outlined">
             <div class="d-flex flex-column pa-4">
-              <div class="text-h6 mb-4">Workout Distribution</div>
+              <div class="text-h6 mb-4">Workout Days Distribution</div>
               <div v-if="globalStats.total === 0" class="text-center pa-4">
                 <p class="text-medium-emphasis">No workouts recorded yet</p>
               </div>
