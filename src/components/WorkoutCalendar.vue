@@ -180,7 +180,11 @@ const getDayClass = (day: Date) => {
 
 .calendar-day.selected {
   background-color: var(--v-primary-base);
-  color: white;
+  color: #FFD700;
+  font-weight: bold;
+  box-shadow: 0 0 0 2px var(--v-primary-base), 0 0 0 4px rgba(37, 99, 235, 0.3);
+  transform: scale(1.1);
+  z-index: 1;
 }
 
 .calendar-day.other-month {
