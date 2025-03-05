@@ -2,6 +2,9 @@
 import { ref } from 'vue';
 import WorkoutCalendar from './components/WorkoutCalendar.vue';
 import WorkoutList from './components/WorkoutList.vue';
+import GlobalOverview from './components/GlobalOverview.vue';
+
+const currentMonth = ref(new Date());
 </script>
 
 <template>
@@ -14,7 +17,11 @@ import WorkoutList from './components/WorkoutList.vue';
       <v-container>
         <v-row>
           <v-col cols="12">
-            <WorkoutCalendar />
+            <GlobalOverview />
+          </v-col>
+          
+          <v-col cols="12">
+            <WorkoutCalendar @update:current-month="currentMonth = $event" />
           </v-col>
           
           <v-col cols="12">

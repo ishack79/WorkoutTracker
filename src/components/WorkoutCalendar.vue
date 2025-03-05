@@ -13,20 +13,25 @@ import {
   addDays,
   subDays,
   startOfWeek,
-  endOfWeek
+  endOfWeek,
+  parseISO
 } from 'date-fns';
+import type { WorkoutStatus } from '../types';
 
+const emit = defineEmits(['update:current-month']);
 const store = useWorkoutStore();
 
 const currentMonth = ref(new Date());
 const selectedDate = ref(new Date());
 
-// Update store's selected date when local selectedDate changes
 watch(selectedDate, (newDate) => {
   store.selectedDate = format(newDate, 'yyyy-MM-dd');
 });
 
-// Initialize selectedDate from store
+watch(currentMonth, (newValue) => {
+  emit('update:current-month', newValue);
+});
+
 selectedDate.value = parse(store.selectedDate, 'yyyy-MM-dd', new Date());
 
 const formattedMonth = computed(() => {
@@ -36,8 +41,8 @@ const formattedMonth = computed(() => {
 const calendarDays = computed(() => {
   const monthStart = startOfMonth(currentMonth.value);
   const monthEnd = endOfMonth(currentMonth.value);
-  const startDate = startOfWeek(monthStart, { weekStartsOn: 1 }); // Start on Monday
-  const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 }); // End on Sunday
+  const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
+  const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
   
   return eachDayOfInterval({ start: startDate, end: endDate });
 });
@@ -62,9 +67,12 @@ const selectDate = (date: Date) => {
   selectedDate.value = date;
 };
 
-const hasWorkout = (date: Date) => {
+const getWorkoutStatus = (date: Date): WorkoutStatus | null => {
   const formattedDate = format(date, 'yyyy-MM-dd');
-  return store.getWorkoutsByDate(formattedDate).length > 0;
+  const workouts = store.getWorkoutsByDate(formattedDate);
+  if (workouts.length === 0) return null;
+  
+  return workouts[0].status;
 };
 
 const getDayClass = (day: Date) => {
@@ -78,11 +86,11 @@ const getDayClass = (day: Date) => {
     classes.push('selected');
   }
   
-  if (hasWorkout(day)) {
-    classes.push('has-workout');
+  const status = getWorkoutStatus(day);
+  if (status) {
+    classes.push(`status-${status}`);
   }
   
-  // Add a class for days not in the current month
   if (day.getMonth() !== currentMonth.value.getMonth()) {
     classes.push('other-month');
   }
@@ -120,7 +128,6 @@ const getDayClass = (day: Date) => {
             @click="selectDate(day)"
           >
             {{ format(day, 'd') }}
-            <div v-if="hasWorkout(day)" class="workout-indicator"></div>
           </div>
         </template>
       </div>
@@ -164,6 +171,7 @@ const getDayClass = (day: Date) => {
   justify-content: center;
   cursor: pointer;
   border-radius: 50%;
+  transition: all 0.2s ease;
 }
 
 .calendar-day:hover {
@@ -183,13 +191,19 @@ const getDayClass = (day: Date) => {
   opacity: 0.5;
 }
 
-.workout-indicator {
-  position: absolute;
-  bottom: 4px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background-color: var(--v-accent-base);
+.calendar-day.status-complete {
+  background-color: rgba(76, 175, 80, 0.2);
+  border: 2px solid #4CAF50;
+}
+
+.calendar-day.status-missed {
+  background-color: rgba(244, 67, 54, 0.2);
+  border: 2px solid #F44336;
+}
+
+.calendar-day.status-upcoming {
+  background-color: rgba(158, 158, 158, 0.2);
+  border: 2px solid #9E9E9E;
 }
 
 @media (max-width: 600px) {

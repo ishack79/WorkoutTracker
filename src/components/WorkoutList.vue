@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
 import { useWorkoutStore } from '../stores/workoutStore';
-import { format, parseISO } from 'date-fns';
+import { format, parseISO, isBefore, isSameDay } from 'date-fns';
 import WorkoutForm from './WorkoutForm.vue';
 import type { Workout, WorkoutStatus } from '../types';
 
@@ -45,7 +45,12 @@ const getStatusIcon = (status: WorkoutStatus) => {
 };
 
 const cycleWorkoutStatus = (workout: Workout) => {
-  const statusCycle: WorkoutStatus[] = ['upcoming', 'complete', 'missed'];
+  const workoutDate = parseISO(workout.date);
+  const isPastWorkout = !isBefore(new Date(), workoutDate) && !isSameDay(workoutDate, new Date());
+  const statusCycle: WorkoutStatus[] = isPastWorkout 
+    ? ['complete', 'missed'] 
+    : ['upcoming', 'complete', 'missed'];
+  
   const currentIndex = statusCycle.indexOf(workout.status);
   const nextIndex = (currentIndex + 1) % statusCycle.length;
   store.updateWorkoutStatus(workout.id, statusCycle[nextIndex]);

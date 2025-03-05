@@ -2,6 +2,7 @@
 import { ref, computed } from 'vue';
 import { useWorkoutStore } from '../stores/workoutStore';
 import type { Workout } from '../types';
+import { isBefore, parseISO } from 'date-fns';
 
 const emit = defineEmits(['form-closed']);
 
@@ -10,7 +11,8 @@ const store = useWorkoutStore();
 const workout = ref<Partial<Workout>>({
   description: '',
   results: '',
-  comments: ''
+  comments: '',
+  status: 'upcoming'
 });
 
 const isEditing = ref(false);
@@ -24,7 +26,8 @@ const resetForm = () => {
   workout.value = {
     description: '',
     results: '',
-    comments: ''
+    comments: '',
+    status: 'upcoming'
   };
   isEditing.value = false;
 };
@@ -32,13 +35,17 @@ const resetForm = () => {
 const saveWorkout = () => {
   if (!workout.value.description) return;
   
+  const isUpcoming = isBefore(new Date(), parseISO(store.selectedDate));
+  const status = workout.value.status || (isUpcoming ? 'upcoming' : 'missed');
+  
   if (isEditing.value && workout.value.id) {
     store.updateWorkout({
       id: workout.value.id,
       date: store.selectedDate,
       description: workout.value.description || '',
       results: workout.value.results || '',
-      comments: workout.value.comments || ''
+      comments: workout.value.comments || '',
+      status: status
     });
   } else {
     store.addWorkout({
@@ -46,7 +53,8 @@ const saveWorkout = () => {
       date: store.selectedDate,
       description: workout.value.description || '',
       results: workout.value.results || '',
-      comments: workout.value.comments || ''
+      comments: workout.value.comments || '',
+      status: status
     });
   }
   

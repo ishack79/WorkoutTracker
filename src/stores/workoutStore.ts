@@ -1,6 +1,6 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { addDays, parseISO, isBefore, isAfter } from 'date-fns';
+import { addDays, parseISO, isBefore, isAfter, startOfDay, isSameDay } from 'date-fns';
 import type { Workout, WorkoutStatus } from '../types';
 
 export const useWorkoutStore = defineStore('workout', () => {
@@ -13,7 +13,8 @@ export const useWorkoutStore = defineStore('workout', () => {
   });
 
   function addWorkout(workout: Workout) {
-    const isUpcoming = isBefore(new Date(), parseISO(workout.date));
+    const workoutDate = parseISO(workout.date);
+    const isUpcoming = isBefore(new Date(), workoutDate) || isSameDay(workoutDate, new Date());
     workouts.value.push({
       ...workout,
       status: isUpcoming ? 'upcoming' : 'missed'
@@ -23,6 +24,11 @@ export const useWorkoutStore = defineStore('workout', () => {
   function updateWorkout(updatedWorkout: Workout) {
     const index = workouts.value.findIndex(w => w.id === updatedWorkout.id);
     if (index !== -1) {
+      const workoutDate = parseISO(updatedWorkout.date);
+      const isPastWorkout = !isBefore(new Date(), workoutDate) && !isSameDay(workoutDate, new Date());
+      if (isPastWorkout && updatedWorkout.status === 'upcoming') {
+        updatedWorkout.status = 'missed';
+      }
       workouts.value[index] = updatedWorkout;
     }
   }
@@ -30,7 +36,13 @@ export const useWorkoutStore = defineStore('workout', () => {
   function updateWorkoutStatus(id: string, status: WorkoutStatus) {
     const workout = workouts.value.find(w => w.id === id);
     if (workout && canEditStatus.value(workout.date)) {
-      workout.status = status;
+      const workoutDate = parseISO(workout.date);
+      const isPastWorkout = !isBefore(new Date(), workoutDate) && !isSameDay(workoutDate, new Date());
+      if (isPastWorkout && status === 'upcoming') {
+        workout.status = 'missed';
+      } else {
+        workout.status = status;
+      }
     }
   }
 
