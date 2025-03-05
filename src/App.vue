@@ -11,7 +11,9 @@ const currentView = ref(0);
 <template>
   <v-app>
     <v-app-bar color="primary" app>
-      <v-app-bar-title>Workout Tracker</v-app-bar-title>
+      <v-app-bar-nav-icon>
+        <v-icon size="large" color="white">mdi-dumbbell</v-icon>
+      </v-app-bar-nav-icon>
       <v-spacer></v-spacer>
       <v-btn-toggle
         v-model="currentView"
