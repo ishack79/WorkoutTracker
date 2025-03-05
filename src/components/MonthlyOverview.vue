@@ -5,10 +5,8 @@ import {
   startOfMonth, 
   endOfMonth, 
   eachDayOfInterval,
-  format,
-  parseISO
+  format
 } from 'date-fns';
-import type { WorkoutStatus } from '../types';
 
 const props = defineProps<{
   currentMonth: Date;
@@ -98,7 +96,7 @@ const monthlyStats = computed(() => {
         color="success"
         rounded
       >
-        <template v-slot:default="{ value }">
+        <template v-slot:default>
           <div class="d-flex justify-space-between px-2">
             <strong>Completion Progress</strong>
             <strong>{{ monthlyStats.completionRate }}%</strong>

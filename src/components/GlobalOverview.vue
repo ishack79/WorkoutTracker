@@ -1,8 +1,7 @@
 <script setup lang="ts">
 import { computed } from 'vue';
 import { useWorkoutStore } from '../stores/workoutStore';
-import { format, parseISO, isBefore, isSameDay } from 'date-fns';
-import type { WorkoutStatus } from '../types';
+import { parseISO, isBefore } from 'date-fns';
 
 const store = useWorkoutStore();
 

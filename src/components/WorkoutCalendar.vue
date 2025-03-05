@@ -9,12 +9,8 @@ import {
   eachDayOfInterval, 
   isToday, 
   isSameDay,
-  getDay,
-  addDays,
-  subDays,
   startOfWeek,
-  endOfWeek,
-  parseISO
+  endOfWeek
 } from 'date-fns';
 import type { WorkoutStatus } from '../types';
 
@@ -121,7 +117,7 @@ const getDayClass = (day: Date) => {
         <div class="calendar-day-header">Sat</div>
         <div class="calendar-day-header">Sun</div>
         
-        <template v-for="(day, index) in calendarDays" :key="index">
+        <template v-for="(day) in calendarDays" :key="index">
           <div 
             class="calendar-day" 
             :class="getDayClass(day)"

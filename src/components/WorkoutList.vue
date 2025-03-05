@@ -73,7 +73,7 @@ const cycleWorkoutStatus = (workout: Workout) => {
         <span class="text-truncate">Workout</span>
         <div class="d-flex align-center">
           <v-chip
-            v-if="store.canEditStatus(workout.date)"
+            v-if="store.canEditStatus"
             :color="getStatusColor(workout.status)"
             class="mr-2"
             @click="cycleWorkoutStatus(workout)"

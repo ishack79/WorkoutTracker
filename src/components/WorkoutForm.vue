@@ -75,12 +75,6 @@ const closeForm = () => {
   emit('form-closed');
 };
 
-const deleteWorkout = (id: string) => {
-  if (confirm('Are you sure you want to delete this workout?')) {
-    store.deleteWorkout(id);
-  }
-};
-
 defineExpose({
   editWorkout
 });
@@ -130,7 +124,7 @@ defineExpose({
           
           <v-card-actions>
             <v-spacer></v-spacer>
-            <v-btn text @click="closeForm">Cancel</v-btn>
+            <v-btn variant="text" @click="closeForm">Cancel</v-btn>
             <v-btn color="primary" @click="saveWorkout">Save</v-btn>
           </v-card-actions>
         </v-form>

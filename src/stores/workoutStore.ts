@@ -1,14 +1,13 @@
 import { defineStore } from 'pinia';
 import { ref, computed } from 'vue';
-import { addDays, parseISO, isBefore, isAfter, startOfDay, isSameDay } from 'date-fns';
+import { parseISO, isBefore, isSameDay } from 'date-fns';
 import type { Workout, WorkoutStatus } from '../types';
 
 export const useWorkoutStore = defineStore('workout', () => {
   const workouts = ref<Workout[]>([]);
   const selectedDate = ref<string>(new Date().toISOString().split('T')[0]);
 
-  const canEditStatus = computed(() => (date: string) => {
-    const workoutDate = parseISO(date);
+  const canEditStatus = computed(() => {
     return true; // Allow editing status for all dates
   });
 
@@ -35,7 +34,7 @@ export const useWorkoutStore = defineStore('workout', () => {
 
   function updateWorkoutStatus(id: string, status: WorkoutStatus) {
     const workout = workouts.value.find(w => w.id === id);
-    if (workout && canEditStatus.value(workout.date)) {
+    if (workout && canEditStatus.value) {
       const workoutDate = parseISO(workout.date);
       const isPastWorkout = !isBefore(new Date(), workoutDate) && !isSameDay(workoutDate, new Date());
       if (isPastWorkout && status === 'upcoming') {
