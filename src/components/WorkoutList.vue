@@ -28,36 +28,11 @@ const editWorkout = (workout: Workout) => {
 const onFormClose = () => {
   editingWorkoutId.value = null;
 };
-
-const deleteWorkout = async (id: string) => {
-  if (confirm('Are you sure you want to delete this workout?')) {
-    try {
-      await store.deleteWorkout(id);
-    } catch (error) {
-      console.error('Error deleting workout:', error);
-    }
-  }
-};
 </script>
 
 <template>
   <div>
     <h2 class="text-h5 mb-4">{{ formattedDate }}</h2>
-    
-    <v-alert
-      v-if="store.error"
-      type="error"
-      class="mb-4"
-    >
-      {{ store.error }}
-    </v-alert>
-    
-    <v-progress-linear
-      v-if="store.isLoading"
-      indeterminate
-      color="primary"
-      class="mb-4"
-    ></v-progress-linear>
     
     <WorkoutForm ref="workoutForm" @form-closed="onFormClose" />
     
@@ -73,7 +48,7 @@ const deleteWorkout = async (id: string) => {
           <v-btn icon @click="editWorkout(workout)">
             <v-icon>mdi-pencil</v-icon>
           </v-btn>
-          <v-btn icon @click="deleteWorkout(workout.id)">
+          <v-btn icon @click="store.deleteWorkout(workout.id)">
             <v-icon>mdi-delete</v-icon>
           </v-btn>
         </div>
