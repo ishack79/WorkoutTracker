@@ -37,9 +37,10 @@ const monthlyStats = computed(() => {
     }
   });
   
-  const completed = stats.complete;
-  const total = stats.complete + stats.missed;
-  stats.completionRate = total > 0 ? Math.round((completed / total) * 100) : 0;
+  // Calculate completion rate only for completed and missed workouts
+  const totalCompleted = stats.complete;
+  const totalAttempted = stats.complete + stats.missed;
+  stats.completionRate = totalAttempted > 0 ? Math.round((totalCompleted / totalAttempted) * 100) : 0;
   
   return stats;
 });
@@ -93,6 +94,8 @@ const monthlyStats = computed(() => {
       <v-progress-linear
         class="mt-6"
         height="20"
+        :model-value="monthlyStats.completionRate"
+        color="success"
         rounded
       >
         <template v-slot:default="{ value }">

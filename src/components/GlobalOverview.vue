@@ -27,10 +27,13 @@ const globalStats = computed(() => {
   // Count workouts by status
   sortedWorkouts.forEach((workout) => {
     stats[workout.status]++;
+    stats.total++;
   });
   
-  // Calculate total after counting individual statuses
-  stats.total = stats.complete + stats.missed + stats.upcoming;
+  // Calculate completion rate only for completed and missed workouts
+  const totalCompleted = stats.complete;
+  const totalAttempted = stats.complete + stats.missed;
+  stats.completionRate = totalAttempted > 0 ? Math.round((totalCompleted / totalAttempted) * 100) : 0;
   
   // Calculate streaks
   sortedWorkouts.forEach((workout) => {
@@ -58,10 +61,6 @@ const globalStats = computed(() => {
     currentStreak++;
   }
   stats.streakCount = currentStreak;
-  
-  // Calculate completion rate
-  const total = stats.complete + stats.missed;
-  stats.completionRate = total > 0 ? Math.round((stats.complete / total) * 100) : 0;
   
   return stats;
 });
