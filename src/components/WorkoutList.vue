@@ -29,6 +29,7 @@ const onFormClose = () => {
 };
 
 const getStatusColor = (status: WorkoutStatus) => {
+  if (!status) return 'grey';
   switch (status) {
     case 'complete': return 'success';
     case 'missed': return 'error';
@@ -37,6 +38,7 @@ const getStatusColor = (status: WorkoutStatus) => {
 };
 
 const getStatusIcon = (status: WorkoutStatus) => {
+  if (!status) return 'mdi-help-circle';
   switch (status) {
     case 'complete': return 'mdi-check-circle';
     case 'missed': return 'mdi-close-circle';
@@ -79,7 +81,7 @@ const cycleWorkoutStatus = (workout: Workout) => {
             @click="cycleWorkoutStatus(workout)"
           >
             <v-icon start :icon="getStatusIcon(workout.status)"></v-icon>
-            {{ workout.status.charAt(0).toUpperCase() + workout.status.slice(1) }}
+            {{ workout.status ? workout.status.charAt(0).toUpperCase() + workout.status.slice(1) : '' }}
           </v-chip>
           <v-chip
             v-else
@@ -87,7 +89,7 @@ const cycleWorkoutStatus = (workout: Workout) => {
             class="mr-2"
           >
             <v-icon start :icon="getStatusIcon(workout.status)"></v-icon>
-            {{ workout.status.charAt(0).toUpperCase() + workout.status.slice(1) }}
+            {{ workout.status ? workout.status.charAt(0).toUpperCase() + workout.status.slice(1) : '' }}
           </v-chip>
           <v-btn icon @click="editWorkout(workout)">
             <v-icon>mdi-pencil</v-icon>
