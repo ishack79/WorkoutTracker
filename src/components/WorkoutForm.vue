@@ -9,7 +9,7 @@ const emit = defineEmits(['form-closed']);
 const store = useWorkoutStore();
 
 const workout = ref<Partial<Workout>>({
-  title: 'Workout',
+  title: 'Strength',
   description: '',
   results: '',
   comments: '',
@@ -25,7 +25,7 @@ const formTitle = computed(() => {
 
 const resetForm = () => {
   workout.value = {
-    title: 'Workout',
+    title: 'Strength',
     description: '',
     results: '',
     comments: '',
@@ -100,12 +100,13 @@ defineExpose({
       <v-card-title>{{ formTitle }}</v-card-title>
       <v-card-text>
         <v-form @submit.prevent="saveWorkout">
-          <v-text-field
+          <v-select
             v-model="workout.title"
-            label="Workout Title"
+            label="Workout Type"
+            :items="['Warm-Up', 'Strength', 'WOD', 'Finisher', 'Cool-Down']"
             outlined
             required
-          ></v-text-field>
+          ></v-select>
           
           <v-textarea
             v-model="workout.description"
