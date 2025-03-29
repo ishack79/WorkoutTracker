@@ -13,7 +13,8 @@ const globalStats = computed(() => {
     upcoming: 0,
     completionRate: 0,
     streakCount: 0,
-    longestStreak: 0
+    longestStreak: 0,
+    weeklyAverage: 0
   };
   
   // Group workouts by date
@@ -82,6 +83,15 @@ const globalStats = computed(() => {
   }
   stats.streakCount = currentStreak;
   
+  // Calculate weekly average of completed workouts
+  if (sortedDates.length > 0) {
+    const firstDate = parseISO(sortedDates[0]);
+    const lastDate = parseISO(sortedDates[sortedDates.length - 1]);
+    const totalDays = Math.max(1, Math.ceil((lastDate.getTime() - firstDate.getTime()) / (1000 * 60 * 60 * 24)));
+    const totalWeeks = Math.max(1, totalDays / 7);
+    stats.weeklyAverage = parseFloat((stats.complete / totalWeeks).toFixed(1));
+  }
+  
   return stats;
 });
 
@@ -125,6 +135,13 @@ const statusChartData = computed(() => {
     }
   ];
 });
+
+const getWeeklyAverageColor = (average: number) => {
+  if (average >= 4 && average <= 5) return 'success';
+  if (average >= 6) return 'warning';
+  if (average > 0 && average < 4) return 'amber-darken-2';
+  return 'error';
+};
 </script>
 
 <template>
@@ -210,6 +227,37 @@ const statusChartData = computed(() => {
                   <div class="text-h4 font-weight-bold">{{ globalStats.longestStreak }}</div>
                   <div class="text-subtitle-2">Longest Streak</div>
                 </div>
+              </div>
+            </div>
+          </v-card>
+        </v-col>
+      </v-row>
+
+      <v-row class="mt-4">
+        <v-col cols="12">
+          <v-card 
+            class="stat-card" 
+            variant="outlined" 
+            :color="getWeeklyAverageColor(globalStats.weeklyAverage)" 
+            border
+          >
+            <div class="d-flex flex-column align-center pa-4">
+              <div class="text-h6 mb-2">Weekly Workout Average</div>
+              <div class="text-h3 font-weight-bold">{{ globalStats.weeklyAverage }}</div>
+              <div class="text-subtitle-1 mt-2">Workouts per Week</div>
+              <div class="text-caption mt-3 text-center">
+                <span v-if="globalStats.weeklyAverage >= 4 && globalStats.weeklyAverage <= 5">
+                  Optimal workout frequency! Keep it up.
+                </span>
+                <span v-else-if="globalStats.weeklyAverage >= 6">
+                  You're working out often. Don't forget to rest and recover.
+                </span>
+                <span v-else-if="globalStats.weeklyAverage > 0 && globalStats.weeklyAverage < 4">
+                  Try to increase workout frequency for better results.
+                </span>
+                <span v-else>
+                  No workouts recorded yet. Time to get started!
+                </span>
               </div>
             </div>
           </v-card>
