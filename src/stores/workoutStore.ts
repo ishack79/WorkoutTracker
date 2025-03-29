@@ -16,6 +16,7 @@ export const useWorkoutStore = defineStore('workout', () => {
     const isUpcoming = isBefore(new Date(), workoutDate) || isSameDay(workoutDate, new Date());
     workouts.value.push({
       ...workout,
+      title: workout.title || 'Workout',
       status: isUpcoming ? 'upcoming' : 'missed'
     });
   }
@@ -28,7 +29,10 @@ export const useWorkoutStore = defineStore('workout', () => {
       if (isPastWorkout && updatedWorkout.status === 'upcoming') {
         updatedWorkout.status = 'missed';
       }
-      workouts.value[index] = updatedWorkout;
+      workouts.value[index] = {
+        ...updatedWorkout,
+        title: updatedWorkout.title || 'Workout'
+      };
     }
   }
 
@@ -52,6 +56,18 @@ export const useWorkoutStore = defineStore('workout', () => {
   function getWorkoutsByDate(date: string) {
     return workouts.value.filter(w => w.date === date);
   }
+
+  // Handle existing workouts that don't have a title
+  const initializeStore = () => {
+    workouts.value.forEach(workout => {
+      if (!workout.title) {
+        workout.title = 'Workout';
+      }
+    });
+  };
+
+  // Initialize on store creation
+  initializeStore();
 
   return {
     workouts,

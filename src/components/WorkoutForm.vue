@@ -9,6 +9,7 @@ const emit = defineEmits(['form-closed']);
 const store = useWorkoutStore();
 
 const workout = ref<Partial<Workout>>({
+  title: 'Workout',
   description: '',
   results: '',
   comments: '',
@@ -24,6 +25,7 @@ const formTitle = computed(() => {
 
 const resetForm = () => {
   workout.value = {
+    title: 'Workout',
     description: '',
     results: '',
     comments: '',
@@ -42,6 +44,7 @@ const saveWorkout = () => {
     store.updateWorkout({
       id: workout.value.id,
       date: store.selectedDate,
+      title: workout.value.title || 'Workout',
       description: workout.value.description || '',
       results: workout.value.results || '',
       comments: workout.value.comments || '',
@@ -51,6 +54,7 @@ const saveWorkout = () => {
     store.addWorkout({
       id: Date.now().toString(),
       date: store.selectedDate,
+      title: workout.value.title || 'Workout',
       description: workout.value.description || '',
       results: workout.value.results || '',
       comments: workout.value.comments || '',
@@ -96,6 +100,13 @@ defineExpose({
       <v-card-title>{{ formTitle }}</v-card-title>
       <v-card-text>
         <v-form @submit.prevent="saveWorkout">
+          <v-text-field
+            v-model="workout.title"
+            label="Workout Title"
+            outlined
+            required
+          ></v-text-field>
+          
           <v-textarea
             v-model="workout.description"
             label="Workout Description"

@@ -72,7 +72,7 @@ const cycleWorkoutStatus = (workout: Workout) => {
       v-show="editingWorkoutId !== workout.id"
     >
       <v-card-title class="d-flex justify-space-between align-center">
-        <span class="text-truncate">Workout</span>
+        <span class="text-truncate">{{ workout.title || 'Workout' }}</span>
         <div class="d-flex align-center">
           <v-chip
             v-if="store.canEditStatus"
