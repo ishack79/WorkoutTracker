@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, nextTick } from 'vue';
 import { useWorkoutStore } from '../stores/workoutStore';
 import type { Workout } from '../types';
 import { isBefore, parseISO } from 'date-fns';
@@ -18,6 +18,7 @@ const workout = ref<Partial<Workout>>({
 
 const isEditing = ref(false);
 const showForm = ref(false);
+const titleSelectRef = ref<HTMLElement | null>(null);
 
 const formTitle = computed(() => {
   return isEditing.value ? 'Edit Workout' : 'Add Workout';
@@ -71,12 +72,30 @@ const editWorkout = (existingWorkout: Workout) => {
   workout.value = { ...existingWorkout };
   isEditing.value = true;
   showForm.value = true;
+  
+  // Focus on the title field after DOM update
+  nextTick(() => {
+    if (titleSelectRef.value) {
+      titleSelectRef.value.focus();
+    }
+  });
 };
 
 const closeForm = () => {
   showForm.value = false;
   resetForm();
   emit('form-closed');
+};
+
+const showAddForm = () => {
+  showForm.value = true;
+  
+  // Focus on the title field after DOM update
+  nextTick(() => {
+    if (titleSelectRef.value) {
+      titleSelectRef.value.focus();
+    }
+  });
 };
 
 defineExpose({
@@ -90,7 +109,7 @@ defineExpose({
       v-if="!showForm" 
       color="primary" 
       block 
-      @click="showForm = true"
+      @click="showAddForm"
       class="mb-4"
     >
       Add Workout
@@ -106,6 +125,7 @@ defineExpose({
             :items="['Warm-Up', 'Strength', 'WOD', 'Finisher', 'Cool-Down']"
             outlined
             required
+            ref="titleSelectRef"
           ></v-select>
           
           <v-textarea
