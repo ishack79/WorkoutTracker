@@ -57,11 +57,59 @@ const cycleWorkoutStatus = (workout: Workout) => {
   const nextIndex = (currentIndex + 1) % statusCycle.length;
   store.updateWorkoutStatus(workout.id, statusCycle[nextIndex]);
 };
+
+const shareAllWorkoutsForDate = () => {
+  if (workoutsForSelectedDate.value.length === 0) return;
+  
+  const workoutDate = format(parseISO(store.selectedDate), 'EEEE, MMMM d, yyyy');
+  let message = `My Workouts - ${workoutDate}\n\n`;
+  
+  workoutsForSelectedDate.value.forEach((workout, index) => {
+    const statusText = {
+      complete: 'DONE',
+      missed: 'MISSED',
+      upcoming: 'PLANNED'
+    };
+    
+    message += `${index + 1}. ${workout.title} [${statusText[workout.status]}]\n`;
+    message += `${workout.description}\n`;
+    
+    if (workout.results) {
+      message += `Results: ${workout.results}\n`;
+    }
+    
+    if (workout.comments) {
+      message += `Notes: ${workout.comments}\n`;
+    }
+    
+    message += '\n';
+  });
+  
+  message += `Shared from Workout Tracker\n`;
+  message += `https://yourworkouttracker.netlify.app/`;
+  
+  const encodedMessage = encodeURIComponent(message);
+  const whatsappUrl = `https://wa.me/?text=${encodedMessage}`;
+  
+  window.open(whatsappUrl, '_blank');
+};
 </script>
 
 <template>
   <div>
-    <h2 class="text-h5 mb-4">{{ formattedDate }}</h2>
+    <div class="d-flex justify-space-between align-center mb-4">
+      <h2 class="text-h5">{{ formattedDate }}</h2>
+      <v-btn
+        v-if="workoutsForSelectedDate.length > 0"
+        color="success"
+        variant="outlined"
+        @click="shareAllWorkoutsForDate"
+        class="share-all-btn"
+      >
+        <v-icon start>mdi-whatsapp</v-icon>
+        Share Day
+      </v-btn>
+    </div>
     
     <WorkoutForm ref="workoutForm" @form-closed="onFormClose" />
     
@@ -123,5 +171,14 @@ const cycleWorkoutStatus = (workout: Workout) => {
 <style scoped>
 .workout-text {
   white-space: pre-line;
+}
+
+.share-all-btn {
+  transition: all 0.2s ease;
+}
+
+.share-all-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(37, 211, 102, 0.3);
 }
 </style>
